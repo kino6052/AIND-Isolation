@@ -127,20 +127,29 @@ class CustomPlayer:
         # Perform any required initializations, including selecting an initial
         # move from the game board (i.e., an opening book), or returning
         # immediately if there are no legal moves
-
+        result = (-1, -1)
         try:
             # The search method call (alpha beta or minimax) should happen in
             # here in order to avoid timeout. The try/except block will
             # automatically catch the exception raised by the search method
             # when the timer gets close to expiring
-            if self.method is "minimax":
-                return self.minimax(game, self.search_depth, True)[1]
+            if self.iterative:
+                depth = 1
+                while True:
+                    if self.method is "alphabeta":
+                        result = self.alphabeta(game, depth)[1]
+                    if self.method is "minimax":
+                        result = self.minimax(game, depth)[1]
+                    depth += 1
             else:
-                return -1, -1
-
+                if self.method is "alphabeta":
+                    result = self.alphabeta(game, self.search_depth)[1]
+                if self.method is "minimax":
+                    result = self.minimax(game, self.search_depth)[1]
+            return result
         except Timeout:
             # Handle any actions required at timeout, if necessary
-            pass
+            return result
 
         # Return the best move from the last completed search iteration
         #raise NotImplementedError
