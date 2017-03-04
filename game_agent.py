@@ -41,9 +41,31 @@ def custom_score(game, player):
     max_player = player
     # max_player_num_moves = len(game.get_legal_moves(max_player))
     min_player = game.get_opponent(player)
-    # in_player_num_moves = len(game.get_legal_moves(min_player))
-    return next_move_heuristics(game, max_player, min_player)  # len(set(game.get_legal_moves(max_player)).difference(set(game.get_legal_moves(min_player)))) - min_player_num_moves # + next_move_heuristics(game, max_player, min_player) # (max_player_num_moves - min_player_num_moves) # * 4.0 + 6.0 * blocking_factor(game, max_player, min_player) + next_move_heuristics(game, max_player, min_player)
+    # min_player_num_moves = len(game.get_legal_moves(min_player))
+    return mirroring_heuristics(game, max_player, min_player) # next_move_heuristics(game, max_player, min_player)  # len(set(game.get_legal_moves(max_player)).difference(set(game.get_legal_moves(min_player)))) - min_player_num_moves # + next_move_heuristics(game, max_player, min_player) # (max_player_num_moves - min_player_num_moves) # * 4.0 + 6.0 * blocking_factor(game, max_player, min_player) + next_move_heuristics(game, max_player, min_player)
 
+
+def mirroring_heuristics(game, max_player, min_player):
+    if can_mirror(game, max_player, min_player):
+        return 10  # More Than Possible Moves (8)
+    else:
+        return improved_heuristics(game, max_player, min_player)
+
+
+def can_mirror(game, max_player, min_player):
+    max_player_location = game.get_player_location(max_player)
+    min_player_location = game.get_player_location(min_player)
+    x = max_player_location[0] + min_player_location[0] - 6
+    y = max_player_location[1] + min_player_location[1] - 6
+    if x == 0 and y == 0:
+        return True
+    else:
+        return False
+
+def improved_heuristics(game, max_player, min_player):
+    max_player_num_moves = len(game.get_legal_moves(max_player))
+    min_player_num_moves = len(game.get_legal_moves(min_player))
+    return max_player_num_moves - min_player_num_moves
 
 def calculate_possible_moves(player_location):
     sign_array = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
