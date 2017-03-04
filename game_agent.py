@@ -39,11 +39,40 @@ def custom_score(game, player):
 
     # TODO: finish this function!
     max_player = player
-    max_player_num_moves = len(game.get_legal_moves(max_player))
+    # max_player_num_moves = len(game.get_legal_moves(max_player))
     min_player = game.get_opponent(player)
-    min_player_num_moves = len(game.get_legal_moves(min_player))
-    return (max_player_num_moves - min_player_num_moves) * 1.0
-    #raise NotImplementedError
+    # in_player_num_moves = len(game.get_legal_moves(min_player))
+    return next_move_heuristics(game, max_player, min_player)  # len(set(game.get_legal_moves(max_player)).difference(set(game.get_legal_moves(min_player)))) - min_player_num_moves # + next_move_heuristics(game, max_player, min_player) # (max_player_num_moves - min_player_num_moves) # * 4.0 + 6.0 * blocking_factor(game, max_player, min_player) + next_move_heuristics(game, max_player, min_player)
+
+
+def calculate_possible_moves(player_location):
+    sign_array = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
+    shape_array = [(1, 2), (2, 1)]
+    moves = []
+    for signs in sign_array:
+        for shapes in shape_array:
+            multiple = [signs[i]*shapes[i] for i in range(2)]
+            multiple = [multiple[i] + player_location[i] for i in range(2)]
+            moves.append(tuple(multiple))
+    return moves
+
+def blocking_factor(game, max_player, min_player):
+    player_location = game.get_player_location(max_player)
+    min_player_location = game.get_player_location(min_player)
+    possible_moves_for_min_player = set(calculate_possible_moves(min_player_location))
+    if player_location in possible_moves_for_min_player:
+        return 1
+    return 0
+
+def next_move_heuristics(game, max_player, min_player):
+    possible_moves = set([])
+    blank_spaces = set(game.get_blank_spaces())
+    for move in game.get_legal_moves(max_player):
+        current_possible_moves = set(calculate_possible_moves(move))
+        possible_moves = possible_moves.union(current_possible_moves)
+    possible_moves = possible_moves.intersection(blank_spaces)
+    possible_moves = possible_moves.difference(game.get_legal_moves(min_player))
+    return len(possible_moves)
 
 
 class CustomPlayer:
