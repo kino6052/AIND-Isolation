@@ -6,9 +6,6 @@ augment the test suite with your own test cases to further test your code.
 You must test your agent's strength against a set of agents with known
 relative strength using tournament.py and include the results in your report.
 """
-import random
-
-
 class Timeout(Exception):
     """Subclass base exception for code clarity."""
     pass
@@ -36,18 +33,15 @@ def custom_score(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-
-    # TODO: finish this function!
     max_player = player
-    # max_player_num_moves = len(game.get_legal_moves(max_player))
     min_player = game.get_opponent(player)
-    # min_player_num_moves = len(game.get_legal_moves(min_player))
-    return mirroring_heuristics(game, max_player, min_player) # next_move_heuristics(game, max_player, min_player)  # len(set(game.get_legal_moves(max_player)).difference(set(game.get_legal_moves(min_player)))) - min_player_num_moves # + next_move_heuristics(game, max_player, min_player) # (max_player_num_moves - min_player_num_moves) # * 4.0 + 6.0 * blocking_factor(game, max_player, min_player) + next_move_heuristics(game, max_player, min_player)
-
+    return next_move_heuristics(game, max_player, min_player)
+    # blocking_heuristics(game, max_player, min_player)
+    # mirroring_heuristics(game, max_player, min_player)
 
 def mirroring_heuristics(game, max_player, min_player):
     if can_mirror(game, max_player, min_player):
-        return 10  # More Than Possible Moves (8)
+        return 10.0  # More Than Possible Moves (8)
     else:
         return improved_heuristics(game, max_player, min_player)
 
@@ -62,10 +56,12 @@ def can_mirror(game, max_player, min_player):
     else:
         return False
 
+
 def improved_heuristics(game, max_player, min_player):
     max_player_num_moves = len(game.get_legal_moves(max_player))
     min_player_num_moves = len(game.get_legal_moves(min_player))
     return max_player_num_moves - min_player_num_moves
+
 
 def calculate_possible_moves(player_location):
     sign_array = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
@@ -78,13 +74,15 @@ def calculate_possible_moves(player_location):
             moves.append(tuple(multiple))
     return moves
 
-def blocking_factor(game, max_player, min_player):
+
+def blocking_heuristics(game, max_player, min_player):
     player_location = game.get_player_location(max_player)
     min_player_location = game.get_player_location(min_player)
     possible_moves_for_min_player = set(calculate_possible_moves(min_player_location))
     if player_location in possible_moves_for_min_player:
-        return 1
-    return 0
+        return 1.0
+    return 0.0
+
 
 def next_move_heuristics(game, max_player, min_player):
     possible_moves = set([])
@@ -94,7 +92,7 @@ def next_move_heuristics(game, max_player, min_player):
         possible_moves = possible_moves.union(current_possible_moves)
     possible_moves = possible_moves.intersection(blank_spaces)
     possible_moves = possible_moves.difference(game.get_legal_moves(min_player))
-    return len(possible_moves)
+    return float(len(possible_moves))
 
 
 class CustomPlayer:
@@ -126,7 +124,6 @@ class CustomPlayer:
         positive value large enough to allow the function to return before the
         timer expires.
     """
-
     def __init__(self, search_depth=3, score_fn=custom_score,
                  iterative=True, method='minimax', timeout=10.):
         self.search_depth = search_depth
@@ -201,9 +198,7 @@ class CustomPlayer:
         except Timeout:
             # Handle any actions required at timeout, if necessary
             return result
-
         # Return the best move from the last completed search iteration
-        #raise NotImplementedError
 
     def minimax(self, game, depth, maximizing_player=True):
         """Implement the minimax search algorithm as described in the lectures.
@@ -256,9 +251,6 @@ class CustomPlayer:
         else:
             return min(legal_moves_list, key=lambda t: t[0])
 
-            # TODO: finish this function!
-            # raise NotImplementedError
-
     def alphabeta(self, game, depth, alpha=float("-inf"), beta=float("inf"), maximizing_player=True):
         """Implement minimax search with alpha-beta pruning as described in the
         lectures.
@@ -300,7 +292,6 @@ class CustomPlayer:
         if self.time_left() < self.TIMER_THRESHOLD:
             raise Timeout()
 
-        # TODO: finish this function!
         max_player = game.__active_player__ if maximizing_player else game.get_opponent(game.__active_player__)
         if len(game.get_legal_moves()) == 0: # TODO: Move This Logic into Score Function
             return game.utility(max_player), (-1, -1)
